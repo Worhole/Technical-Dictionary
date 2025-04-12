@@ -39,15 +39,31 @@ struct MainView: View {
                                 NavigationLink(destination: WordInfoView(viewModel: WordInfoViewModel(wordInfo: word,dataSource:.shared, onDisappear: {
                                     viewModel.reloadData()
                                 }))){
+                                    if let data = word.imageData?.first, let image = UIImage(data: data) {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .frame(width: 50, height: 50)
+                                    }else {
+                                        Image(systemName: "photo.on.rectangle.angled.fill")
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 50, height: 50)
+                                    }
                                     Text(word.word)
                                 }
                             }
                         }
                     }
+                
                 }
+                
             }
         }
-        .listStyle(.insetGrouped)
+                .listStyle(.insetGrouped)
         .scrollDismissesKeyboard(.immediately)
     }
+}
+
+extension MainView{
+    
 }

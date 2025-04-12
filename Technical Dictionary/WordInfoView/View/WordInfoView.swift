@@ -12,6 +12,7 @@ struct WordInfoView: View {
     
     @Environment(\.dismiss) var dissmiss
     @State private var isShowImageDetail = false
+    @State private var isShowConfiguarationDialog = false
     @State private var isShowEditView = false
     @State private var currentIndex = 0
     @State private var refreshID = UUID()
@@ -20,6 +21,7 @@ struct WordInfoView: View {
     
     var body: some View {
         ZStack{
+            EnableSwipeBackGesture()
             ScrollView(showsIndicators: false){
                 TabView(selection:$currentIndex){
                     if let imageData = viewModel.wordInfo.imageData{
@@ -86,7 +88,7 @@ struct WordInfoView: View {
             }.id(refreshID)
             
             if isShowImageDetail {
-                Color.black//.opacity(0.5)
+                Color.black
                     .ignoresSafeArea()
                     .transition(.opacity)
     
@@ -97,8 +99,17 @@ struct WordInfoView: View {
             }
             
         }
+        .alert("Are you sure you want to delete this information?",
+               isPresented: $isShowConfiguarationDialog) {
+            Button("Delete", role: .destructive) {
+                viewModel.dataSource.deleteWord(viewModel.wordInfo)
+                viewModel.onDisappear?()
+                dissmiss()
+            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
         .navigationBarBackButtonHidden(true)
-        
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -116,11 +127,7 @@ struct WordInfoView: View {
                         Text("Edit")
                     }
                     Button {
-                        withAnimation {
-                            viewModel.dataSource.deleteWord(viewModel.wordInfo)
-                            viewModel.onDisappear?()
-                            dissmiss.callAsFunction()
-                        }
+                        isShowConfiguarationDialog.toggle()
                     } label: {
                         Text("Delete")
                     }
@@ -140,4 +147,15 @@ struct WordInfoView: View {
     }
 }
 
+struct EnableSwipeBackGesture: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        let controller = UIViewController()
+        DispatchQueue.main.async {
+            controller.navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+            controller.navigationController?.interactivePopGestureRecognizer?.delegate = nil
+        }
+        return controller
+    }
 
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+}
